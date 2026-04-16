@@ -7,7 +7,8 @@ from jinja2.exceptions import TemplateNotFound
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-
+from dotenv import load_dotenv
+load_dotenv()
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.readonly",
@@ -138,13 +139,12 @@ def main():
         if not to_addr:
             continue
 
-        thread_id, last_msg_id = lookup_thread_from_log(to_addr)
+        thread_id, _ = lookup_thread_from_log(to_addr)
         last_subject = ""
+        thread_id, last_msg_id, last_subject = find_last_outbound_to(service, to_addr)
         if not thread_id:
-            thread_id, last_msg_id, last_subject = find_last_outbound_to(service, to_addr)
-            if not thread_id:
-                print(f"[skip] No prior thread found to {to_addr}; send an initial email first.")
-                continue
+            print(f"[skip] No prior thread found to {to_addr}; send an initial email first.")
+            continue
 
         subject = f"Re: {last_subject or 'Following up'}"
 
